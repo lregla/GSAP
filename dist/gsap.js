@@ -1726,27 +1726,17 @@
     };
 
     _proto.then = function then(onFulfilled) {
-      var self = this;
-      return new Promise(function (resolve) {
-        var f = _isFunction(onFulfilled) ? onFulfilled : _passThrough,
-            _resolve = function _resolve() {
-          var _then = self.then;
-          self.then = null;
-          f = f(self);
-
-          if (f) {
-            if (f.then || f === self) {
-              self.then = _then;
-            } else if (!_isFunction(f)) {
-              f = _passThrough;
-            }
-          }
-
-          resolve(f);
-          self.then = _then;
-        };
-
-        if (self._initted && self.totalProgress() === 1 && self._ts >= 0 || !self._tTime && self._ts < 0) {
+      let self = this;
+      return new Promise(resolve => {
+        let f = _isFunction(onFulfilled) ? onFulfilled : _passThrough,
+          _resolve = () => {
+            let _then = self.then;
+            self.then = null; // temporarily null the then() method to avoid an infinite loop (see https://github.com/greensock/GSAP/issues/322)
+            _isFunction(f) && (f = f(self)) && (f.then || f === self) && (self.then = _then);
+            resolve(f);
+            self.then = _then;
+          };
+        if (self._initted && (self.totalProgress() === 1 && self._ts >= 0) || (!self._tTime && self._ts < 0)) {
           _resolve();
         } else {
           self._prom = _resolve;
