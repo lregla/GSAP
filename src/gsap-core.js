@@ -1384,14 +1384,7 @@ export class Animation {
 				_resolve = () => {
 					let _then = self.then;
 					self.then = null; // temporarily null the then() method to avoid an infinite loop (see https://github.com/greensock/GSAP/issues/322)
-					f = f(self);
-					if (f) {
-						if (f.then || f === self) {
-							self.then = _then;
-						} else if (!_isFunction(f)) {
-							f = _passThrough;
-						}
-					}
+					_isFunction(f) && (f = f(self)) && (f.then || f === self) && (self.then = _then);
 					resolve(f);
 					self.then = _then;
 				};
